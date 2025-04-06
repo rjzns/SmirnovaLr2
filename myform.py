@@ -13,9 +13,10 @@ user_data = {}
 def my_form():
     mail = request.forms.get('ADRESS')
     username = request.forms.get('USERNAME')
+    user_question = request.forms.get('QUEST')  # Добавлено поле QUESTION
     
     # Проверка заполненности полей
-    if not mail or not username:
+    if not mail or not username or not user_question:
         return "Error: All fields must be filled!"
     
     # Проверка формата email
@@ -25,10 +26,14 @@ def my_form():
     # Получение текущей даты в сокращённом формате
     access_date = datetime.now().strftime('%Y-%m-%d')
     
-    # Сохранение данных в словарь (email как ключ, username как значение)
-    user_data[mail] = username
-    # pdb.set_trace()
+    # Сохранение данных в словарь (email как ключ, список [username, question] как значение)
+    user_data[mail] = [username, user_question]
+    
+    # Отладочная печать словаря
+    pdb.set_trace()
+    print("Current user_data dictionary:", user_data)
     
     return "Thanks, %s! The answer will be sent to the mail %s. Access Date: %s" % (username, mail, access_date)
+
 
 
