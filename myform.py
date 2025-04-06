@@ -1,39 +1,47 @@
 from bottle import post, request
 import re
 from datetime import datetime
-import pdb
+import json
+import os
 
-# Регулярное выражение для проверки email
 EMAIL_PATTERN = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-
-# Словарь для хранения данных
-user_data = {}
+JSON_FILE = 'user_data.json'
 
 @post('/home', method='post')
 def my_form():
     mail = request.forms.get('ADRESS')
     username = request.forms.get('USERNAME')
-    user_question = request.forms.get('QUEST')  # Добавлено поле QUESTION
+    user_question = request.forms.get('QUEST')
     
-    # Проверка заполненности полей
     if not mail or not username or not user_question:
         return "Error: All fields must be filled!"
     
-    # Проверка формата email
     if not re.match(EMAIL_PATTERN, mail):
         return "Error: Invalid email format!"
     
-    # Получение текущей даты в сокращённом формате
+    if len(user_question) <= 3 or user_question.isdigit():
+        return "Error: Question must be >3 chars and not only digits!"
+    
+    # Чтение текущих данных
+    user_data = {}
+    if os.path.exists(JSON_FILE):
+        with open(JSON_FILE, 'r') as f:
+            user_data = json.load(f)
+    
+    # Добавление новых данных
+    if mail in user_data:
+        if user_question not in [q for _, q in user_data[mail]]:
+            user_data[mail].append([username, user_question])
+    else:
+        user_data[mail] = [[username, user_question]]
+    
+    # Перезапись файла с обновлёнными данными
+    with open(JSON_FILE, 'w') as f:  
+        json.dump(user_data, f, indent=4)
+    
     access_date = datetime.now().strftime('%Y-%m-%d')
-    
-    # Сохранение данных в словарь (email как ключ, список [username, question] как значение)
-    user_data[mail] = [username, user_question]
-    
-    # Отладочная печать словаря
-    pdb.set_trace()
-    print("Current user_data dictionary:", user_data)
-    
-    return "Thanks, %s! The answer will be sent to the mail %s. Access Date: %s" % (username, mail, access_date)
+    return "Thanks, %s! The answer will be sent to %s. Date: %s" % (username, mail, access_date)
+
 
 
 
