@@ -13,14 +13,27 @@ def my_form():
     username = request.forms.get('USERNAME')
     user_question = request.forms.get('QUEST')
     
+    # Проверка на пустые поля
     if not mail or not username or not user_question:
         return "Error: All fields must be filled!"
     
+    # Проверка email
     if not re.match(EMAIL_PATTERN, mail):
         return "Error: Invalid email format!"
     
-    if len(user_question) <= 3 or user_question.isdigit():
-        return "Error: Question must be >3 chars and not only digits!"
+    # Проверка имени
+    username = username.strip()
+    if (len(username) <= 3 or 
+        not any(c.isalpha() for c in username) or 
+        re.match(r'^[?!.,\-\s]+$', username)):
+        return "Error: Username must be >3 chars and contain letters!"
+    
+    # Проверка вопроса
+    user_question = user_question.strip()
+    if (len(user_question) <= 3 or 
+        user_question.isdigit() or 
+        re.match(r'^[?!.,\-\s]+$', user_question)):
+        return "Error: Question must be >3 chars and not only digits/special chars!"
     
     # Чтение текущих данных
     user_data = {}
@@ -28,14 +41,17 @@ def my_form():
         with open(JSON_FILE, 'r') as f:
             user_data = json.load(f)
     
-    # Добавление новых данных
+    # Проверка имени при повторном вопросе
     if mail in user_data:
+        existing_username = user_data[mail][0][0]
+        if username != existing_username:
+            return "Error: Username must match previous one for this email!"
         if user_question not in [q for _, q in user_data[mail]]:
             user_data[mail].append([username, user_question])
     else:
         user_data[mail] = [[username, user_question]]
     
-    # Перезапись файла с обновлёнными данными
+    # Перезапись файла
     with open(JSON_FILE, 'w') as f:  
         json.dump(user_data, f, indent=4)
     
