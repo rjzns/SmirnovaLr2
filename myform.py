@@ -3,8 +3,7 @@ import re
 from datetime import datetime
 import json
 import os
-
-EMAIL_PATTERN = r'^(?!\.)[a-zA-Z0-9_!#$%&\'*+/=?`{|}~^.-]{1,64}(?<!\.)(?=.*[a-zA-Z0-9])@(?![-.])[a-zA-Z0-9-]{1,255}(?<!-)\.[a-zA-Z]{2,63}$'
+EMAIL_PATTERN = r'^(?!\.)[a-zA-Z0-9_!#$%&\'*+/=?`{|}~^.-]{1,64}(?<!\.)(?=.*[a-zA-Z0-9])@(?![-.])(?:[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$'
 JSON_FILE = 'user_data.json'
 
 @post('/home', method='post')
